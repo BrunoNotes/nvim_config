@@ -123,3 +123,4 @@ end, { desc = "Opens scratch buffer" })
 vim.keymap.set("n", "<leader>gs", function()
     utils:runOnTerminal({ cmd = "lazygit" })
 end, { desc = "Run lazygit in a floating terminal" })
+
