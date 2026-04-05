@@ -1,0 +1,13 @@
+{
+    "code": {
+        "body": [
+            "```${1}",
+            "```"
+        ],
+        "prefix": "shebang"
+    },
+    "code_inline": {
+        "body": "`${1}`",
+        "prefix": "code_inline"
+    }
+}

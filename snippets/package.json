@@ -1,0 +1,34 @@
+{
+    "name": "personal-snippets",
+    "contributes": {
+        "snippets": [
+            {
+                "language": [
+                    "bash",
+                    "sh"
+                ],
+                "path": "./bash.json"
+            },
+            {
+                "language": [
+                    "html",
+                    "javascript",
+                    "typescript"
+                ],
+                "path": "./html.json"
+            },
+            {
+                "language": "zig",
+                "path": "./zig.json"
+            },
+            {
+                "language": "odin",
+                "path": "./odin.json"
+            },
+            {
+                "language": "markdown",
+                "path": "./markdown.json"
+            }
+        ]
+    }
+}

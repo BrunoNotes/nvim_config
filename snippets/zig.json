@@ -1,0 +1,54 @@
+{
+    "print": {
+        "body": "std.debug.print(\"${1}\", .{})",
+        "prefix": "print"
+    },
+    "loginfo": {
+        "body": "std.log.info(\"${1}\", .{})",
+        "prefix": "loginfo"
+    },
+    "logerr": {
+        "body": "std.log.err(\"${1}\", .{})",
+        "prefix": "logerr"
+    },
+    "logwarn": {
+        "body": "std.log.warn(\"${1}\", .{})",
+        "prefix": "logwarn"
+    },
+    "logdebug": {
+        "body": "std.log.debug(\"${1}\", .{})",
+        "prefix": "logdebug"
+    },
+    "fnvoid": {
+        "body": "fn ${1}() void {}",
+        "prefix": "fnvoid"
+    },
+    "fnself": {
+        "body": [
+            "fn ${1}(self: *@This()) void {",
+            "    _ = self;",
+            "}"
+        ],
+        "prefix": "fnself"
+    },
+    "struct": {
+        "body": "const ${1} = struct {};",
+        "prefix": "struct"
+    },
+    "std": {
+        "body": "const std = @import(\"std\");",
+        "prefix": "std"
+    },
+    "builtin": {
+        "body": "const builtin = @import(\"builtin\");",
+        "prefix": "builtin"
+    },
+    "assert": {
+        "body": "const assert = std.debug.assert;",
+        "prefix": "assert"
+    },
+    "import": {
+        "body": "const ${1} = @import(\"${2}\");",
+        "prefix": "import"
+    }
+}
