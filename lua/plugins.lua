@@ -56,8 +56,10 @@ require("oil").setup({
 
 vim.keymap.set("n", "<leader>fb", function() vim.cmd("Oil") end, { silent = true, desc = "Opens file browser" })
 
-require("nvim-treesitter").setup {
-    ensure_installed = {},
+local ts_ok, nvim_treesitter = pcall(require, "nvim-treesitter")
+
+nvim_treesitter.setup {
+    ensure_installed = { "c", "cpp" },
     sync_install = false,
     auto_install = true,
     ignore_install = {},
@@ -73,6 +75,20 @@ require("nvim-treesitter").setup {
         additional_vim_regex_highlighting = false,
     },
 }
+
+if ts_ok then
+    -- fix bug, not starting for some languages
+    vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "c", "cpp" },
+        group = vim.api.nvim_create_augroup("b_treesitter_start", { clear = true }),
+        callback = function()
+            vim.treesitter.start()
+        end,
+    })
+    vim.cmd("syntax off")
+end
+
+
 
 require("mason").setup()
 require("mason-lspconfig").setup()
