@@ -31,14 +31,18 @@ vim.api.nvim_create_autocmd({ "VimEnter" }, {
     callback = function()
         local file_cwd = vim.fn.expand("%:p:h")
         if (file_cwd ~= nil or file_cwd ~= "") then
+            local path_to_change = file_cwd
             if string.sub(file_cwd, 1, 3) == "oil" then
-                vim.fn.chdir(string.sub(file_cwd, 7, string.len(file_cwd)))
-            else
-                vim.fn.chdir(file_cwd)
+                path_to_change = string.sub(file_cwd, 7, string.len(file_cwd))
+            end
+
+            local ok, _ = pcall(vim.fn.chdir, path_to_change)
+
+            if ok then
+                print(string.format("CWD changed to: %s", vim.loop.cwd()))
             end
         end
 
-        print(string.format("CWD changed to: %s", vim.loop.cwd()))
     end,
 })
 
