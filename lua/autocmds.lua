@@ -38,11 +38,10 @@ vim.api.nvim_create_autocmd({ "VimEnter" }, {
 
             local ok, _ = pcall(vim.fn.chdir, path_to_change)
 
-            if ok then
-                print(string.format("CWD changed to: %s", vim.loop.cwd()))
-            end
+            -- if ok then
+            --     print(string.format("CWD changed to: %s", vim.loop.cwd()))
+            -- end
         end
-
     end,
 })
 
@@ -74,9 +73,11 @@ vim.api.nvim_create_autocmd({ "TermOpen" }, {
 
 local statusBar = function()
     local getFileName = function()
-        -- local file_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
-        -- return string.format('%s', file_path)
-        return vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+        local file_path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+
+        file_path = string.gsub(file_path, vim.loop.cwd() .. "/", "")
+
+        return file_path
     end
 
     local getGitStatus = function()

@@ -14,6 +14,19 @@ vim.pack.add({
     "https://github.com/nvim-telescope/telescope.nvim",
 })
 
+local hooks = function(ev)
+    local name, kind = ev.data.spec.name, ev.data.kind
+
+    if name == "nvim-treesitter" and (kind == "install" or kind == "update") then
+        if not ev.data.active then
+            vim.cmd.packadd("nvim-treesitter")
+        end
+        vim.cmd(":TSUpdate")
+    end
+end
+
+vim.api.nvim_create_autocmd('PackChanged', { callback = hooks })
+
 vim.cmd.packadd("nvim.undotree")
 vim.cmd.packadd("nvim.difftool")
 
@@ -78,17 +91,26 @@ nvim_treesitter.setup {
 
 if ts_ok then
     -- fix bug, not starting for some languages
+    local ts_installed_langs = nvim_treesitter.get_installed()
+
     vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "c", "cpp" },
+        -- pattern = { "c", "cpp", "make", "cs" },
         group = vim.api.nvim_create_augroup("b_treesitter_start", { clear = true }),
-        callback = function()
-            vim.treesitter.start()
+        callback = function(args)
+            local lang = vim.treesitter.language.get_lang(args.match)
+
+            if lang ~= "oil" then
+                if not vim.list_contains(ts_installed_langs, lang) then
+                    print("Installing treesitter parser for " .. lang .. "...")
+                    nvim_treesitter.install(lang):wait()
+                end
+
+                pcall(vim.treesitter.start)
+            end
         end,
     })
     vim.cmd("syntax off")
 end
-
-
 
 require("mason").setup()
 require("mason-lspconfig").setup()
