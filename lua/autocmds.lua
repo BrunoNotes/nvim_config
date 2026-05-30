@@ -38,9 +38,9 @@ vim.api.nvim_create_autocmd({ "VimEnter" }, {
 
             local ok, _ = pcall(vim.fn.chdir, path_to_change)
 
-            -- if ok then
-            --     print(string.format("CWD changed to: %s", vim.loop.cwd()))
-            -- end
+            if ok then
+                print(string.format("CWD changed to: %s", vim.loop.cwd()))
+            end
         end
     end,
 })

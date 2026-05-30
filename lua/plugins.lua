@@ -160,6 +160,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("i", "<C-S>", function() vim.lsp.buf.signature_help() end)
         vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end)
         vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end)
+        vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end)
         vim.keymap.set("n", "<F2>", function() vim.lsp.buf.rename() end)
 
         if client:supports_method("textDocument/completion") then

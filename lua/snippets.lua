@@ -19,7 +19,7 @@ local getSnippets = function()
     return snip_lang_path
 end
 
-function _G.custom_complete(findstart, base)
+function _G.customComplete(findstart, base)
     if findstart == 1 then
         local line = vim.api.nvim_get_current_line()
         local col = vim.api.nvim_win_get_cursor(0)[2]
@@ -59,7 +59,7 @@ function _G.custom_complete(findstart, base)
 end
 
 -- set the user func to be the snippets <C-x><C-U>
-vim.opt.completefunc = 'v:lua.custom_complete'
+vim.opt.completefunc = 'v:lua.customComplete'
 
 vim.api.nvim_create_autocmd({ "CompleteDone" }, {
     desc = "Snippets",

@@ -18,10 +18,6 @@ vim.keymap.set("n", "<leader><leader>x", function() vim.cmd(":source %") end,
 vim.keymap.set("n", "<leader>x", function() vim.cmd(":. lua") end,
     { silent = true, desc = "Execute current line" })
 vim.keymap.set("n", "<C-s>", function() vim.cmd.w() end, { silent = true, desc = "Save file" })
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 vim.keymap.set("n", "<ESC>", function() vim.cmd("nohlsearch") end, { desc = "Clear highlights on search" })
 
 vim.keymap.set("n", "n", "nzzzv", { desc = "Keeps the mouse in place while searching" })
@@ -80,10 +76,15 @@ vim.keymap.set("n", "<leader>cc", function()
     }
 end, { desc = "Quick commit" })
 
-vim.keymap.set("n", "<leader>fo", function() vim.cmd.copen() end, { desc = "Open quickfix list" })
-vim.keymap.set("n", "<leader>fq", function() vim.cmd.cclose() end, { desc = "Close quickfix list" })
-vim.keymap.set("n", "<leader>fn", function() vim.cmd.cnext() end, { desc = "Goes to next quickfix list item" })
-vim.keymap.set("n", "<leader>fp", function() vim.cmd.cprevious() end, { desc = "Goes to next quickfix list item" })
+vim.keymap.set("n", "<leader>qf", function()
+    if vim.fn.getqflist({ winid = 0 }).winid > 0 then
+         vim.cmd.cclose()
+    else
+        vim.cmd.copen()
+    end
+end, { desc = "Toggle quickfix list" })
+vim.keymap.set("n", "<leader>qn", function() vim.cmd.cnext() end, { desc = "Goes to next quickfix list item" })
+vim.keymap.set("n", "<leader>qp", function() vim.cmd.cprevious() end, { desc = "Goes to next quickfix list item" })
 vim.keymap.set("n", "<A-n>", function() vim.cmd.cnext() end, { desc = "Goes to next quickfix list item" })
 vim.keymap.set("n", "<A-p>", function() vim.cmd.cprevious() end, { desc = "Goes to next quickfix list item" })
 
@@ -116,11 +117,10 @@ vim.keymap.set("x", "<leader>r", function()
 end, { desc = "Replaces word under cursor" })
 
 vim.keymap.set("n", "<leader>sc", function()
-    buf = vim.api.nvim_create_buf(true, true)
+    local buf = vim.api.nvim_create_buf(true, true)
     vim.api.nvim_set_current_buf(buf)
 end, { desc = "Opens scratch buffer" })
 
 vim.keymap.set("n", "<leader>gs", function()
     utils:runOnTerminal({ cmd = "lazygit" })
 end, { desc = "Run lazygit in a floating terminal" })
-
