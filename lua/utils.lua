@@ -1,11 +1,21 @@
 TERM_WIN = nil
 local term_buf = nil
+local log = {}
+local os_name = vim.uv.os_uname().sysname
 
 local M = {}
 
 M.home = vim.fn.expand("~")
 M.nvim_config = vim.fn.stdpath("config")
 M.nvim_data = vim.fn.stdpath("data")
+
+if os_name == "Windows_NT" then
+    M.path_char = "\\"
+elseif os_name == "Linux" then
+    M.path_char = "/"
+elseif os_name == "Darwin" then
+    M.path_char = "/"
+end
 
 M.findBufferByName = function(name)
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -68,7 +78,7 @@ M.scanDir = function(self, directory, opts)
     ---@param path string Path to check
     ---@return boolean True if path should be ignored
     local function shouldIgnore(path)
-        local filename = path:match("[^/]+$")
+        local filename = path:match("[^" .. self.path_char .. "]+$")
         for _, pattern in ipairs(ignore_patterns) do
             if filename:match(pattern) then
                 return true
@@ -89,7 +99,7 @@ M.scanDir = function(self, directory, opts)
         end)
 
         for _, item in ipairs(dir_contents) do
-            local full_path = dir .. '/' .. item
+            local full_path = dir .. self.path_char .. item
 
             -- Check if it's a directory
             if vim.fn.isdirectory(full_path) == 1 then
@@ -108,7 +118,7 @@ M.scanDir = function(self, directory, opts)
     end
 
     -- Normalize directory path and scan
-    directory = vim.fn.fnamemodify(directory, ':p'):gsub('/$', '')
+    directory = vim.fn.fnamemodify(directory, ':p'):gsub(self.path_char .. '$', '')
     return scanRecursive(directory)
 end
 
@@ -304,7 +314,7 @@ M.icons = {
     warn = '',
     hint = '',
     info = '',
-    Constructor = "",
+    Gear = "",
     Git = "",
     Circle = "",
     BoldArrowDown = "",
@@ -335,5 +345,19 @@ M.icons = {
         "🌘 ",
     }
 }
+
+M.log = function(message) table.insert(log, message) end
+
+M.printLog = function()
+    print(vim.inspect(log))
+end
+
+M.stringEndsWith = function(str, ending)
+    return ending == "" or str:sub(- #ending) == ending
+end
+
+M.stringStartsWith = function(str, start)
+    return str:sub(1, start:len()) == start
+end
 
 return M

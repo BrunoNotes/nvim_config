@@ -150,10 +150,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
         local client = vim.lsp.get_client_by_id(args.data.client_id)
         if not client then return end
 
+        -- This stops the LSP from sending the "gray" tokens for inactive regions
         if client and client.name == 'clangd' then
-            -- This stops the LSP from sending the "gray" tokens for inactive regions
             client.server_capabilities.semanticTokensProvider = nil
         end
+        vim.diagnostic.config({ underline = { severity = { min = vim.diagnostic.severity.HINT } } })
+        vim.api.nvim_set_hl(0, "DiagnosticUnnecessary", {})
+
 
         vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end)
         vim.keymap.set("n", "H", function() vim.diagnostic.open_float() end)

@@ -75,7 +75,7 @@ local statusBar = function()
     local getFileName = function()
         local file_path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
 
-        file_path = string.gsub(file_path, vim.loop.cwd() .. "/", "")
+        file_path = string.gsub(file_path, vim.loop.cwd() .. utils.path_char, "")
 
         return file_path
     end
@@ -111,7 +111,7 @@ local statusBar = function()
 
             if lsp_names ~= "" then
                 -- return string.format('LSP: %s', lsp_names)
-                return string.format('%s %s', icons.Constructor, lsp_names)
+                return string.format('%s %s', icons.Gear, lsp_names)
             else
                 return ""
             end

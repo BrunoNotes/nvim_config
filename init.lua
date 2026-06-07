@@ -30,8 +30,9 @@ vim.opt.winborder = "rounded"
 vim.opt.timeoutlen = 300
 -- vim.opt.spell = true
 vim.opt.spelllang = "pt_br,en_us,cjk"
-vim.opt.completeopt = "fuzzy,menu,menuone,noselect,noinsert,popup,nosort,longest"
-vim.opt.complete = "F,kspell,o"
+vim.opt.completeopt = "fuzzy,menu,menuone,noselect,noinsert,popup,nosort"
+-- vim.opt.complete = "F,kspell,o"
+vim.opt.complete = "F"
 vim.opt.wildoptions = "fuzzy,pum,tagfile"
 
 vim.schedule(function()
@@ -45,7 +46,7 @@ require("autocmds")
 
 require("usercmds")
 
-require("snippets")
+require("auto_complete")
 
 require("plugins")
 
