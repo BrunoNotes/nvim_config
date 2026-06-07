@@ -111,4 +111,18 @@ end, {
     end
 })
 
+vim.api.nvim_create_user_command("TermRun", function(opts)
+    if utils.tableSize(opts.fargs) > 0 then
+        local cmd_table = {}
+        for _, value in ipairs(opts.fargs) do
+            value = value:lower()
+            table.insert(cmd_table, value)
+        end
+        local cmd = table.concat(cmd_table, " ")
+        utils:sendCmdToTerminal(cmd)
+    end
+end, {
+    desc = "Runs cmd on terminal",
+    nargs = "*",
+})
 

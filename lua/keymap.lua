@@ -189,6 +189,14 @@ vim.keymap.set("n", "<leader>qp", function()
     vim.cmd.cprevious()
 end, { desc = "Goes to next quickfix list item" })
 
+vim.keymap.set("n", "<A-q>", function()
+    if vim.fn.getqflist({ winid = 0 }).winid > 0 then
+        vim.cmd.cclose()
+    else
+        vim.cmd.copen()
+    end
+end, { desc = "Toggle quickfix list" })
+
 vim.keymap.set("n", "<A-n>", function()
     vim.cmd.cnext()
 end, { desc = "Goes to next quickfix list item" })
@@ -214,3 +222,7 @@ end, { desc = "Opens scratch buffer" })
 vim.keymap.set("n", "<leader>gs", function()
     utils:runOnTerminal({ cmd = "lazygit" })
 end, { desc = "Run lazygit in a floating terminal" })
+
+vim.keymap.set("n", "<A-b>", function()
+    utils:sendCmdToTerminal()
+end, { desc = "Close buffers" })

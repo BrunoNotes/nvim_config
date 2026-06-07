@@ -38,7 +38,7 @@ end
 
 
 local lineHasPath = function(line)
-    return utils.stringEndsWith(line, ".") or utils.stringEndsWith(line, utils.path_char)
+    return utils.stringEndsWith(line, utils.path_char)
 end
 
 local getPathFromLine = function(line)

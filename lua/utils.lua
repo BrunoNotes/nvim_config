@@ -1,5 +1,6 @@
 TERM_WIN = nil
 local term_buf = nil
+local last_term_cmd = nil
 local log = {}
 local os_name = vim.uv.os_uname().sysname
 
@@ -206,6 +207,36 @@ M.openTerminal = function(self, opts)
     -- Start in insert mode
     vim.cmd.startinsert()
 end
+
+
+M.sendCmdToTerminal = function(self, cmd)
+    local current_buffer = vim.api.nvim_get_current_buf()
+    if current_buffer ~= term_buf then
+        self:openTerminal()
+    end
+
+    local chan = vim.b[term_buf].terminal_job_id
+    if chan then
+        if cmd ~= nil then
+            vim.api.nvim_chan_send(chan, cmd .. "\r")
+            last_term_cmd = cmd
+        else
+            if last_term_cmd ~= nil then
+                vim.api.nvim_chan_send(chan, last_term_cmd .. "\r")
+            else
+                local in_cmd = vim.fn.input("Command: ")
+                vim.api.nvim_chan_send(chan, in_cmd .. "\r")
+                last_term_cmd = in_cmd
+            end
+        end
+        return
+    end
+end
+
+M.setTermCmd = function(cmd)
+    last_term_cmd = cmd
+end
+
 
 M.closeFloatingWin = function()
     -- Check if the current buffer is in a floating window
