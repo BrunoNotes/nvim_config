@@ -147,12 +147,18 @@ function _G.customComplete(findstart, base)
         for _, snippet in pairs(snippets) do
             for word, imp in pairs(snippet) do
                 if base ~= "" and word:match("^" .. base) then
+                    local info = imp.body
+
+                    if type(imp.body) ~= "table" then
+                        info = {imp.body}
+                    end
+
                     table.insert(candidates, {
                         word = word,
                         abbr = word,
                         kind = "S",
                         menu = "[Snippet]",
-                        info = table.concat(imp.body, "\n"),
+                        info = table.concat(info, "\n"),
                     })
                 end
             end

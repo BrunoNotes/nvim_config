@@ -72,8 +72,10 @@ vim.api.nvim_create_autocmd({ "TermOpen" }, {
 })
 
 local statusBar = function()
+    local buf_id = vim.api.nvim_get_current_buf()
+
     local getFileName = function()
-        local file_path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+        local file_path = vim.api.nvim_buf_get_name(buf_id)
 
         file_path = string.gsub(file_path, vim.loop.cwd() .. utils.path_char, "")
 
@@ -97,7 +99,7 @@ local statusBar = function()
     end
 
     local getLspName = function()
-        local lsp_clients = vim.lsp.get_clients()
+        local lsp_clients = vim.lsp.get_clients({ bufnr = buf_id })
 
         if lsp_clients ~= nil then
             local lsp_names = ""
