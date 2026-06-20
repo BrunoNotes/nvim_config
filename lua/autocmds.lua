@@ -61,13 +61,29 @@ vim.api.nvim_create_autocmd({ "VimLeave" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd({ "TermOpen" }, {
+vim.api.nvim_create_autocmd({ "TermEnter" }, {
     desc = "Terminal local options",
     group = vim.api.nvim_create_augroup("b_custom_term_open", {}),
     callback = function(buf)
         vim.opt_local.number = false
         vim.opt_local.relativenumber = false
         vim.opt_local.scrolloff = 0
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "TermLeave" }, {
+    desc = "Terminal local options",
+    group = vim.api.nvim_create_augroup("b_custom_term_close", {}),
+    callback = function(buf)
+        local win_config = vim.api.nvim_win_get_config(0)
+        if win_config.relative ~= "" then
+            -- floating
+        else
+            -- non floating
+            vim.opt_local.number = true
+            vim.opt_local.relativenumber = true
+            vim.opt_local.scrolloff = 10
+        end
     end,
 })
 

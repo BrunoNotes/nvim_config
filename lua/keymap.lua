@@ -4,16 +4,16 @@ local utils = require("utils");
 -- insert
 -------------------------------------
 
-vim.keymap.set("i", "<C-j>", "<C-n>")
-vim.keymap.set("i", "<C-k>", "<C-p>")
-
-vim.keymap.set("i", "<CR>", function()
-    return vim.fn.pumvisible() == 1 and "<C-y>" or "<CR>"
-end, { expr = true, replace_keycodes = true })
-
-vim.keymap.set("i", "<Esc>", function()
-    return vim.fn.pumvisible() == 1 and "<C-e>" or "<Esc>"
-end, { expr = true, replace_keycodes = true })
+-- vim.keymap.set("i", "<C-j>", "<C-n>")
+-- vim.keymap.set("i", "<C-k>", "<C-p>")
+--
+-- vim.keymap.set("i", "<CR>", function()
+--     return vim.fn.pumvisible() == 1 and "<C-y>" or "<CR>"
+-- end, { expr = true, replace_keycodes = true })
+--
+-- vim.keymap.set("i", "<Esc>", function()
+--     return vim.fn.pumvisible() == 1 and "<C-e>" or "<Esc>"
+-- end, { expr = true, replace_keycodes = true })
 
 -------------------------------------
 -- command
@@ -21,13 +21,15 @@ end, { expr = true, replace_keycodes = true })
 
 vim.keymap.set("c", "<C-k>", function()
     return vim.fn.pumvisible() == 1
-        and "<C-p>"
+        -- and "<C-p>"
+        and "<C-k>"
         or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
 end, { expr = true, replace_keycodes = true })
 
 vim.keymap.set("c", "<C-j>", function()
     return vim.fn.pumvisible() == 1
-        and "<C-n>"
+        -- and "<C-n>"
+        and "<C-j>"
         or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
 end, { expr = true, replace_keycodes = true })
 
@@ -111,19 +113,19 @@ vim.keymap.set("n", "J", "mzJ`z", { desc = "Leaves the mouse in place while movi
 vim.keymap.set("n", "<leader>y", "\"+y", { desc = "Copy to system clipboard" })
 vim.keymap.set("n", "<leader>Y", "\"+Y", { desc = "Copy to system clipboard" })
 
-vim.keymap.set("n", "<A-Up>", function()
+vim.keymap.set("n", "<A-k>", function()
     vim.cmd(":resize -2")
 end, { desc = "Resize window up" })
 
-vim.keymap.set("n", "<A-Down>", function()
+vim.keymap.set("n", "<A-j>", function()
     vim.cmd(":resize +2")
 end, { desc = "Resize window do wn" })
 
-vim.keymap.set("n", "<A-Left>", function()
+vim.keymap.set("n", "<A-h>", function()
     vim.cmd(":vertical resize  +2")
 end, { desc = "Resize  window left" })
 
-vim.keymap.set("n", "<A-Right>", function()
+vim.keymap.set("n", "<A-l>", function()
     vim.cmd(":vertical resize -2")
 end, { desc = "Resize window rigt" })
 
@@ -211,7 +213,7 @@ vim.keymap.set("n", "<leader>cj", function()
 end, { desc = "Clear jump list" })
 
 vim.keymap.set("n", "<leader><CR>", function()
-    utils:openTerminal()
+    utils:openTerminal({ floating = false })
 end, { desc = "Opens terminal" })
 
 vim.keymap.set("n", "<leader>sc", function()

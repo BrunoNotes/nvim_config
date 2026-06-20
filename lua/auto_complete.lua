@@ -36,7 +36,7 @@ local getSnippets = function(filetype)
     return _snippets[filetype] or {}
 end
 
-
+        --[[
 local lineHasPath = function(line)
     return utils.stringEndsWith(line, utils.path_char)
 end
@@ -78,6 +78,7 @@ local getPathFromLine = function(line)
         return nil
     end
 end
+]]
 
 function _G.customComplete(findstart, base)
     if findstart == 1 then
@@ -92,6 +93,7 @@ function _G.customComplete(findstart, base)
         -- return vim.lsp.omnifunc(findstart, base)
     else
         local candidates = {}
+        --[[
         local line = vim.api.nvim_get_current_line()
 
         if lineHasPath(line) then
@@ -141,6 +143,7 @@ function _G.customComplete(findstart, base)
                 })
             end
         end
+        ]]
 
         local snippets = getSnippets(vim.bo.filetype)
 

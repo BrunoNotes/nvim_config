@@ -1,5 +1,6 @@
 TERM_WIN = nil
 local term_buf = nil
+local buf_before_term = nil
 local last_term_cmd = nil
 local log = {}
 local os_name = vim.uv.os_uname().sysname
@@ -185,9 +186,11 @@ M.openTerminal = function(self, opts)
                 delete_buffer = false,
             })
 
-            TERM_WIN = run_result.win
+            if run_result ~= nil then
+                TERM_WIN = run_result.win
 
-            term_buf = vim.api.nvim_get_current_buf()
+                term_buf = vim.api.nvim_get_current_buf()
+            end
         else
             -- openFloatinWindow(term_buf)
             vim.api.nvim_win_set_config(TERM_WIN, {
@@ -196,12 +199,21 @@ M.openTerminal = function(self, opts)
             vim.api.nvim_set_current_win(TERM_WIN)
         end
     else
+        buf_before_term = vim.api.nvim_get_current_buf()
+
         if ok_buf and term_buf ~= nil then
             vim.api.nvim_set_current_buf(term_buf)
         else
             vim.cmd.term()
             term_buf = vim.api.nvim_get_current_buf()
         end
+
+        vim.keymap.set("n", "<Esc>", function()
+            vim.api.nvim_set_current_buf(buf_before_term)
+        end, {
+            buffer = true,
+            desc = "Switch terminal window"
+        })
     end
 
     -- Start in insert mode
@@ -211,8 +223,9 @@ end
 
 M.sendCmdToTerminal = function(self, cmd)
     local current_buffer = vim.api.nvim_get_current_buf()
+
     if current_buffer ~= term_buf then
-        self:openTerminal()
+        self:openTerminal({ floating = false })
     end
 
     local chan = vim.b[term_buf].terminal_job_id
@@ -236,7 +249,6 @@ end
 M.setTermCmd = function(cmd)
     last_term_cmd = cmd
 end
-
 
 M.closeFloatingWin = function()
     -- Check if the current buffer is in a floating window

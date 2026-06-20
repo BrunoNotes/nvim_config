@@ -12,6 +12,8 @@ vim.pack.add({
     "https://github.com/nvim-lua/plenary.nvim",
     { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
     "https://github.com/nvim-telescope/telescope.nvim",
+    "https://github.com/saghen/blink.lib",
+    "https://github.com/Saghen/blink.cmp",
 })
 
 local hooks = function(ev)
@@ -25,7 +27,7 @@ local hooks = function(ev)
     end
 end
 
-vim.api.nvim_create_autocmd('PackChanged', { callback = hooks })
+vim.api.nvim_create_autocmd("PackChanged", { callback = hooks })
 
 vim.cmd.packadd("nvim.undotree")
 vim.cmd.packadd("nvim.difftool")
@@ -101,11 +103,20 @@ if ts_ok then
 
             if lang ~= "oil" then
                 if not vim.list_contains(ts_installed_langs, lang) then
-                    print("Installing treesitter parser for " .. lang .. "...")
-                    nvim_treesitter.install(lang):wait()
+                    -- print("Installing treesitter parser for " .. lang .. "...")
+                    -- nvim_treesitter.install(lang):wait()
+                    vim.schedule(function()
+                        print("Installing treesitter parser for " .. lang .. "...")
+                        nvim_treesitter.install(lang):wait()
+                        pcall(vim.treesitter.start)
+                    end)
+                else
+                    vim.schedule(function()
+                        pcall(vim.treesitter.start)
+                    end)
                 end
 
-                pcall(vim.treesitter.start)
+                -- pcall(vim.treesitter.start)
             end
         end,
     })
@@ -151,7 +162,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         if not client then return end
 
         -- This stops the LSP from sending the "gray" tokens for inactive regions
-        if client and client.name == 'clangd' then
+        if client and client.name == "clangd" then
             client.server_capabilities.semanticTokensProvider = nil
         end
         vim.diagnostic.config({ underline = { severity = { min = vim.diagnostic.severity.HINT } } })
@@ -245,14 +256,14 @@ vim.keymap.set("n", "<leader>hf", function() harpoon.ui:toggle_quick_menu(harpoo
 vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end)
 vim.keymap.set("n", "<leader>hn", function()
     local win = vim.api.nvim_get_current_win()
-    if vim.api.nvim_win_get_config(win).relative == '' then
+    if vim.api.nvim_win_get_config(win).relative == "" then
         -- if not floating
         harpoon:list():next()
     end
 end)
 vim.keymap.set("n", "<leader>hp", function()
     local win = vim.api.nvim_get_current_win()
-    if vim.api.nvim_win_get_config(win).relative == '' then
+    if vim.api.nvim_win_get_config(win).relative == "" then
         -- if not floating
         harpoon:list():prev()
     end
@@ -264,7 +275,7 @@ for _, n in ipairs({ 1, 2, 3, 4, 5 }) do
         "<leader>" .. n,
         function()
             local win = vim.api.nvim_get_current_win()
-            if vim.api.nvim_win_get_config(win).relative == '' then
+            if vim.api.nvim_win_get_config(win).relative == "" then
                 -- if not floating
                 harpoon:list():select(n)
             end
@@ -273,7 +284,7 @@ for _, n in ipairs({ 1, 2, 3, 4, 5 }) do
     )
 end
 
-require('telescope').setup {
+require("telescope").setup {
     defaults = {
         mappings = {
             i = {
@@ -305,9 +316,55 @@ require('telescope').setup {
     }
 }
 
-local builtin = require('telescope.builtin')
+local builtin = require("telescope.builtin")
 
-vim.keymap.set('n', '<leader>.', builtin.find_files, { desc = 'Telescope find files' })
-vim.keymap.set('n', '<leader>gp', builtin.live_grep, { desc = 'Telescope live grep' })
-vim.keymap.set('n', '<leader>gb', builtin.buffers, { desc = 'Telescope buffers' })
-vim.keymap.set('n', '<leader>gh', builtin.help_tags, { desc = 'Telescope help tags' })
+vim.keymap.set("n", "<leader>.", builtin.find_files, { desc = "Telescope find files" })
+vim.keymap.set("n", "<leader>gp", builtin.live_grep, { desc = "Telescope live grep" })
+vim.keymap.set("n", "<leader>gb", builtin.buffers, { desc = "Telescope buffers" })
+vim.keymap.set("n", "<leader>gh", builtin.help_tags, { desc = "Telescope help tags" })
+
+local cmp = require("blink.cmp")
+cmp.build():pwait()
+cmp.setup({
+    completion = {
+        list = { selection = { preselect = false, auto_insert = false } },
+        menu = {
+            auto_show = false,
+            border = "none",
+            draw = {
+                columns = { { "label", "label_description", gap = 1 }, { "kind_icon" } }
+            },
+        },
+        documentation = { auto_show = true, auto_show_delay_ms = 200 },
+        ghost_text = { enabled = false },
+    },
+    cmdline = {
+        keymap = {
+            preset = 'none',
+            ["<C-y>"] = { "select_and_accept", "fallback" },
+            ["<CR>"] = { "select_and_accept", "fallback" },
+
+            ["<C-k>"] = { "show", "select_prev", "fallback_to_mappings" },
+            ["<C-j>"] = { "show", "select_next", "fallback_to_mappings" },
+        }
+    },
+    -- Insert/Select mode
+    keymap = {
+        preset = "none",
+        ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+        ["<C-e>"] = { "hide", "fallback" },
+        ["<C-y>"] = { "select_and_accept", "fallback" },
+        ["<CR>"] = { "select_and_accept", "fallback" },
+
+        ["<C-k>"] = { "show", "select_prev", "fallback_to_mappings" },
+        ["<C-j>"] = { "show", "select_next", "fallback_to_mappings" },
+
+        ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+        ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+
+        ["<Tab>"] = { "snippet_forward", "fallback" },
+        ["<S-Tab>"] = { "snippet_backward", "fallback" },
+
+        -- ["<C-k>"] = { "show_signature", "hide_signature", "fallback" },
+    },
+})
