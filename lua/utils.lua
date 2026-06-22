@@ -1,9 +1,4 @@
-TERM_WIN = nil
-local term_buf = nil
-local buf_before_term = nil
-local last_term_cmd = nil
 local log = {}
-local os_name = vim.uv.os_uname().sysname
 
 local M = {}
 
@@ -11,11 +6,15 @@ M.home = vim.fn.expand("~")
 M.nvim_config = vim.fn.stdpath("config")
 M.nvim_data = vim.fn.stdpath("data")
 
-if os_name == "Windows_NT" then
+M.TERM_WIN = nil
+M.term_buf = nil
+M.buf_before_term = nil
+M.last_term_cmd = nil
+M.os_name = vim.uv.os_uname().sysname
+
+if M.os_name == "Windows_NT" then
     M.path_char = "\\"
-elseif os_name == "Linux" then
-    M.path_char = "/"
-elseif os_name == "Darwin" then
+else
     M.path_char = "/"
 end
 
@@ -165,6 +164,8 @@ M.openFloatinWindow = function(self, buf)
 end
 
 M.openTerminal = function(self, opts)
+    self.buf_before_term = vim.api.nvim_get_current_buf()
+
     opts = opts or {}
 
     local floating = true
@@ -173,43 +174,41 @@ M.openTerminal = function(self, opts)
     end
 
     -- term_buf created on the top of the file
-    local ok_buf, _ = pcall(vim.api.nvim_buf_get_name, term_buf)
-    local ok_win, _ = pcall(vim.api.nvim_win_get_config, TERM_WIN)
+    local ok_buf, _ = pcall(vim.api.nvim_buf_get_name, self.term_buf)
+    local ok_win, _ = pcall(vim.api.nvim_win_get_config, self.TERM_WIN)
 
     if floating then
         if not ok_win then
-            term_buf = nil
+            self.term_buf = nil
 
             local run_result = self:runOnTerminal({
                 cmd = vim.o.shell,
-                buf = term_buf,
+                buf = self.term_buf,
                 delete_buffer = false,
             })
 
             if run_result ~= nil then
-                TERM_WIN = run_result.win
+                self.TERM_WIN = run_result.win
 
-                term_buf = vim.api.nvim_get_current_buf()
+                self.term_buf = vim.api.nvim_get_current_buf()
             end
         else
-            -- openFloatinWindow(term_buf)
-            vim.api.nvim_win_set_config(TERM_WIN, {
+            -- openFloatinWindow(self.term_buf)
+            vim.api.nvim_win_set_config(self.TERM_WIN, {
                 hide = false
             })
-            vim.api.nvim_set_current_win(TERM_WIN)
+            vim.api.nvim_set_current_win(self.TERM_WIN)
         end
     else
-        buf_before_term = vim.api.nvim_get_current_buf()
-
-        if ok_buf and term_buf ~= nil then
-            vim.api.nvim_set_current_buf(term_buf)
+        if ok_buf and self.term_buf ~= nil then
+            vim.api.nvim_set_current_buf(self.term_buf)
         else
             vim.cmd.term()
-            term_buf = vim.api.nvim_get_current_buf()
+            self.term_buf = vim.api.nvim_get_current_buf()
         end
 
         vim.keymap.set("n", "<Esc>", function()
-            vim.api.nvim_set_current_buf(buf_before_term)
+            vim.api.nvim_set_current_buf(self.buf_before_term)
         end, {
             buffer = true,
             desc = "Switch terminal window"
@@ -223,39 +222,38 @@ end
 
 M.sendCmdToTerminal = function(self, cmd)
     local current_buffer = vim.api.nvim_get_current_buf()
+    local current_cmd = ""
 
-    if current_buffer ~= term_buf then
+    if cmd ~= nil then
+        current_cmd = cmd
+    else
+        if self.last_term_cmd ~= nil then
+            current_cmd = self.last_term_cmd
+        else
+            local in_cmd = vim.fn.input("Command: ")
+            current_cmd = in_cmd
+        end
+    end
+
+    if current_buffer ~= self.term_buf then
         self:openTerminal({ floating = false })
     end
 
-    local chan = vim.b[term_buf].terminal_job_id
+    local chan = vim.b[self.term_buf].terminal_job_id
+
     if chan then
-        if cmd ~= nil then
-            vim.api.nvim_chan_send(chan, cmd .. "\r")
-            last_term_cmd = cmd
-        else
-            if last_term_cmd ~= nil then
-                vim.api.nvim_chan_send(chan, last_term_cmd .. "\r")
-            else
-                local in_cmd = vim.fn.input("Command: ")
-                vim.api.nvim_chan_send(chan, in_cmd .. "\r")
-                last_term_cmd = in_cmd
-            end
-        end
+        vim.api.nvim_chan_send(chan, current_cmd .. "\r")
+        self.last_term_cmd = current_cmd
         return
     end
 end
 
-M.setTermCmd = function(cmd)
-    last_term_cmd = cmd
-end
-
-M.closeFloatingWin = function()
+M.closeFloatingWin = function(self)
     -- Check if the current buffer is in a floating window
     local win = vim.api.nvim_get_current_win()
     if vim.api.nvim_win_get_config(win).relative ~= '' then
         -- defined in util
-        if win == TERM_WIN then
+        if win == self.TERM_WIN then
             -- only hide if it is the terminall window
             vim.api.nvim_win_set_config(win, {
                 hide = true
@@ -273,20 +271,21 @@ M.closeFloatingWin = function()
     end
 end
 
-M.runOnTerminal = function(self, opts)
-    local createBuffer = function(self, scratch)
-        local buf = nil
-        if not scratch then
-            buf = vim.api.nvim_create_buf(true, false)
-        else
-            -- Create an immutable scratch buffer that is wiped once hidden
-            buf = vim.api.nvim_create_buf(false, true)
-            vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
-            vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-        end
-        return buf
+M.createBuffer = function(self, scratch)
+    local buf = nil
+    if not scratch then
+        buf = vim.api.nvim_create_buf(true, false)
+    else
+        -- Create an immutable scratch buffer that is wiped once hidden
+        buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+        vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
+    return buf
+end
 
+
+M.runOnTerminal = function(self, opts)
     opts = opts or {}
 
     if opts ~= {} then
@@ -297,7 +296,7 @@ M.runOnTerminal = function(self, opts)
     end
 
     local delete_buffer = opts.delete_buffer or true
-    local buf = opts.buf or createBuffer(delete_buffer)
+    local buf = opts.buf or self:createBuffer(delete_buffer)
 
     local win = self:openFloatinWindow(buf)
 

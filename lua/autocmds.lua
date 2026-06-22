@@ -79,10 +79,13 @@ vim.api.nvim_create_autocmd({ "TermLeave" }, {
         if win_config.relative ~= "" then
             -- floating
         else
+            local current_buf = vim.api.nvim_get_current_buf()
             -- non floating
-            vim.opt_local.number = true
-            vim.opt_local.relativenumber = true
-            vim.opt_local.scrolloff = 10
+            if utils.term_buf == current_buf then
+                vim.opt_local.number = true
+                vim.opt_local.relativenumber = true
+                vim.opt_local.scrolloff = 10
+            end
         end
     end,
 })
@@ -153,7 +156,7 @@ local statusBar = function()
     })
 end
 
-vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "LspAttach" }, {
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "LspAttach" }, {
     desc = "Status line",
     group = vim.api.nvim_create_augroup("b_status_line", { clear = true }),
     callback = statusBar,
