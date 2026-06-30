@@ -74,27 +74,8 @@ csharp_new_line_between_query_expression_clauses = false
     utils.writeFile(editorconfig_path, editorconfig)
 end, { desc = "Generate .editorconfig", nargs = '*' })
 
-vim.api.nvim_create_user_command("Terminal", function(opts)
-    -- print(vim.inspect(opts))
-    -- utils:openTerminal()
-    if utils.tableSize(opts.fargs) > 0 then
-        for _, value in ipairs(opts.fargs) do
-            value = value:lower()
-            if value == "r" or value == "replace" then
-                utils:openTerminal({ floating = false })
-            elseif value == "v" or value == "vertical" then
-                vim.cmd('vsplit')
-                utils:openTerminal({ floating = false })
-            elseif value == "s" or value == "horizontal" then
-                vim.cmd('split')
-                utils:openTerminal({ floating = false })
-            else
-                utils:openTerminal({ floating = true })
-            end
-        end
-    else
-        utils:openTerminal({ floating = true })
-    end
+vim.api.nvim_create_user_command("Term", function(opts)
+    utils:openTerminal({})
 end, {
     desc = "Opens terminal",
     nargs = "*",
@@ -125,4 +106,3 @@ end, {
     desc = "Runs cmd on terminal",
     nargs = "*",
 })
-

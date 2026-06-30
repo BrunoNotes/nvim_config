@@ -10,7 +10,6 @@ vim.pack.add({
     "https://github.com/mason-org/mason.nvim",
     "https://github.com/mason-org/mason-lspconfig.nvim",
     "https://github.com/nvim-lua/plenary.nvim",
-    { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
     "https://github.com/nvim-telescope/telescope.nvim",
     "https://github.com/saghen/blink.lib",
     "https://github.com/Saghen/blink.cmp",
@@ -74,7 +73,7 @@ vim.keymap.set("n", "<leader>fb", function() vim.cmd("Oil") end, { silent = true
 local ts_ok, nvim_treesitter = pcall(require, "nvim-treesitter")
 
 nvim_treesitter.setup {
-    ensure_installed = { "c", "cpp" },
+    ensure_installed = {},
     sync_install = false,
     auto_install = true,
     ignore_install = {},
@@ -168,7 +167,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.diagnostic.config({ underline = { severity = { min = vim.diagnostic.severity.HINT } } })
         vim.api.nvim_set_hl(0, "DiagnosticUnnecessary", {})
 
-
         vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end)
         vim.keymap.set("n", "H", function() vim.diagnostic.open_float() end)
         vim.keymap.set("i", "<C-S>", function() vim.lsp.buf.signature_help() end)
@@ -191,6 +189,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
 
         vim.keymap.set("n", "<leader>lf", vim.lsp.buf.format)
+
         -- vim.api.nvim_create_autocmd("BufWritePre", {
         --     desc = "Format on save",
         --     group = vim.api.nvim_create_augroup("b_lsp_format", { clear = true }),
@@ -243,47 +242,6 @@ vim.diagnostic.config({
     },
 })
 
-local harpoon = require("harpoon")
-
-harpoon:setup({
-    settings = {
-        save_on_toggle = true,
-        sync_on_ui_close = true
-    }
-})
-
-vim.keymap.set("n", "<leader>hf", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
-vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end)
-vim.keymap.set("n", "<leader>hn", function()
-    local win = vim.api.nvim_get_current_win()
-    if vim.api.nvim_win_get_config(win).relative == "" then
-        -- if not floating
-        harpoon:list():next()
-    end
-end)
-vim.keymap.set("n", "<leader>hp", function()
-    local win = vim.api.nvim_get_current_win()
-    if vim.api.nvim_win_get_config(win).relative == "" then
-        -- if not floating
-        harpoon:list():prev()
-    end
-end)
-
-for _, n in ipairs({ 1, 2, 3, 4, 5 }) do
-    vim.keymap.set(
-        "n",
-        "<leader>" .. n,
-        function()
-            local win = vim.api.nvim_get_current_win()
-            if vim.api.nvim_win_get_config(win).relative == "" then
-                -- if not floating
-                harpoon:list():select(n)
-            end
-        end,
-        { silent = true, desc = "Harpoon: go to list " .. n }
-    )
-end
-
 require("telescope").setup {
     defaults = {
         mappings = {
@@ -322,6 +280,7 @@ vim.keymap.set("n", "<leader>.", builtin.find_files, { desc = "Telescope find fi
 vim.keymap.set("n", "<leader>gp", builtin.live_grep, { desc = "Telescope live grep" })
 vim.keymap.set("n", "<leader>gb", builtin.buffers, { desc = "Telescope buffers" })
 vim.keymap.set("n", "<leader>gh", builtin.help_tags, { desc = "Telescope help tags" })
+vim.keymap.set("n", "<leader>gl", builtin.resume, { desc = "Telescope open last picker" })
 
 local cmp = require("blink.cmp")
 cmp.build():pwait()
@@ -346,6 +305,9 @@ cmp.setup({
 
             ["<C-k>"] = { "show", "select_prev", "fallback_to_mappings" },
             ["<C-j>"] = { "show", "select_next", "fallback_to_mappings" },
+
+            ["<S-Tab>"] = { "show", "select_prev", "fallback_to_mappings" },
+            ["<Tab>"] = { "show", "select_next", "fallback_to_mappings" },
         }
     },
     -- Insert/Select mode

@@ -45,7 +45,8 @@ require("autocmds")
 
 require("usercmds")
 
-require("auto_complete")
+-- default auto complete
+-- require("auto_complete")
 
 require("plugins")
 

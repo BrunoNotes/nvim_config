@@ -6,7 +6,7 @@ M.home = vim.fn.expand("~")
 M.nvim_config = vim.fn.stdpath("config")
 M.nvim_data = vim.fn.stdpath("data")
 
-M.TERM_WIN = nil
+M.term_win = nil
 M.term_buf = nil
 M.buf_before_term = nil
 M.last_term_cmd = nil
@@ -168,52 +168,22 @@ M.openTerminal = function(self, opts)
 
     opts = opts or {}
 
-    local floating = true
-    if opts.floating ~= nil then
-        floating = opts.floating
-    end
-
     -- term_buf created on the top of the file
     local ok_buf, _ = pcall(vim.api.nvim_buf_get_name, self.term_buf)
-    local ok_win, _ = pcall(vim.api.nvim_win_get_config, self.TERM_WIN)
 
-    if floating then
-        if not ok_win then
-            self.term_buf = nil
-
-            local run_result = self:runOnTerminal({
-                cmd = vim.o.shell,
-                buf = self.term_buf,
-                delete_buffer = false,
-            })
-
-            if run_result ~= nil then
-                self.TERM_WIN = run_result.win
-
-                self.term_buf = vim.api.nvim_get_current_buf()
-            end
-        else
-            -- openFloatinWindow(self.term_buf)
-            vim.api.nvim_win_set_config(self.TERM_WIN, {
-                hide = false
-            })
-            vim.api.nvim_set_current_win(self.TERM_WIN)
-        end
+    if ok_buf and self.term_buf ~= nil then
+        vim.api.nvim_set_current_buf(self.term_buf)
     else
-        if ok_buf and self.term_buf ~= nil then
-            vim.api.nvim_set_current_buf(self.term_buf)
-        else
-            vim.cmd.term()
-            self.term_buf = vim.api.nvim_get_current_buf()
-        end
-
-        vim.keymap.set("n", "<Esc>", function()
-            vim.api.nvim_set_current_buf(self.buf_before_term)
-        end, {
-            buffer = true,
-            desc = "Switch terminal window"
-        })
+        vim.cmd.term()
+        self.term_buf = vim.api.nvim_get_current_buf()
     end
+
+    vim.keymap.set("n", "<Esc>", function()
+        vim.api.nvim_set_current_buf(self.buf_before_term)
+    end, {
+        buffer = true,
+        desc = "Switch terminal window"
+    })
 
     -- Start in insert mode
     vim.cmd.startinsert()
@@ -236,7 +206,7 @@ M.sendCmdToTerminal = function(self, cmd)
     end
 
     if current_buffer ~= self.term_buf then
-        self:openTerminal({ floating = false })
+        self:openTerminal({})
     end
 
     local chan = vim.b[self.term_buf].terminal_job_id
@@ -253,7 +223,7 @@ M.closeFloatingWin = function(self)
     local win = vim.api.nvim_get_current_win()
     if vim.api.nvim_win_get_config(win).relative ~= '' then
         -- defined in util
-        if win == self.TERM_WIN then
+        if win == self.term_win then
             -- only hide if it is the terminall window
             vim.api.nvim_win_set_config(win, {
                 hide = true
@@ -318,12 +288,6 @@ M.runOnTerminal = function(self, opts)
         buffer = true,
         desc = "Close floating window"
     })
-    vim.keymap.set("n", "<leader>tv", function()
-        self:splitFloatingWin("v")
-    end, { buffer = true, desc = "Moves floating terminal to a split window" })
-    vim.keymap.set("n", "<leader>ts", function()
-        self:splitFloatingWin("s")
-    end, { buffer = true, desc = "Moves floating terminal to a split window" })
 
     -- Start in insert mode
     vim.cmd.startinsert()
@@ -332,23 +296,6 @@ M.runOnTerminal = function(self, opts)
         job_id = job_id,
         win = win
     }
-end
-
-M.splitFloatingWin = function(self, opts)
-    opts = opts or {}
-
-    local split = opts.split or "s"
-    split = split:lower()
-
-    self:closeFloatingWin()
-
-    if split == "v" then
-        vim.cmd('vsplit')
-    else
-        vim.cmd('split')
-    end
-
-    self:openTerminal({ floating = false })
 end
 
 M.icons = {
@@ -388,6 +335,7 @@ M.icons = {
     }
 }
 
+-- global log for testing
 M.log = function(message) table.insert(log, message) end
 
 M.printLog = function()

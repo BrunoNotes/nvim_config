@@ -62,21 +62,32 @@ vim.keymap.set("v", "<leader>y", "\"+y", { desc = "Copy to system clipboard" })
 vim.keymap.set("v", "p", '"_dP', { desc = "Paste on top of a word without copying" })
 vim.keymap.set("v", "<leader>Y", "\"+Y", { desc = "Copy to system clipboard" })
 
-vim.keymap.set("x", "<leader>r", function()
-    local function getSelection()
-        -- does not handle rectangular selection
-        local s_start = vim.fn.getpos(".")
-        local s_end = vim.fn.getpos("v")
-        local lines = vim.fn.getregion(s_start, s_end)
-        return lines
-    end
+local function getSelection()
+    -- does not handle rectangular selection
+    local s_start = vim.fn.getpos(".")
+    local s_end = vim.fn.getpos("v")
+    local lines = vim.fn.getregion(s_start, s_end)
+    return lines
+end
 
+vim.keymap.set("x", "<leader>rw", function()
     local selection = getSelection()
     local text = vim.fn.escape(selection[1], [[\/]])
 
     local clear_selection = vim.keycode("<C-u>")
     local double_left = vim.keycode("<Left><Left><Left>")
     local keys_to_feed = ":" .. clear_selection .. "%s/" .. text .. "//gc" .. double_left
+
+    vim.fn.feedkeys(keys_to_feed)
+end, { desc = "Replaces word under cursor" })
+
+vim.keymap.set("x", "<leader>ra", function()
+    local selection = getSelection()
+    local text = vim.fn.escape(selection[1], [[\/]])
+
+    local clear_selection = vim.keycode("<C-u>")
+    local double_left = vim.keycode("<Left><Left><Left>")
+    local keys_to_feed = ":" .. clear_selection .. "%s/" .. text .. "/" .. text .. "/gc" .. double_left
 
     vim.fn.feedkeys(keys_to_feed)
 end, { desc = "Replaces word under cursor" })
@@ -183,11 +194,11 @@ vim.keymap.set("n", "<leader>qf", function()
     end
 end, { desc = "Toggle quickfix list" })
 
-vim.keymap.set("n", "<leader>qn", function()
+vim.keymap.set("n", "<leader>qj", function()
     vim.cmd.cnext()
 end, { desc = "Goes to next quickfix list item" })
 
-vim.keymap.set("n", "<leader>qp", function()
+vim.keymap.set("n", "<leader>qk", function()
     vim.cmd.cprevious()
 end, { desc = "Goes to next quickfix list item" })
 
@@ -199,11 +210,11 @@ vim.keymap.set("n", "<A-q>", function()
     end
 end, { desc = "Toggle quickfix list" })
 
-vim.keymap.set("n", "<A-n>", function()
+vim.keymap.set("n", "<A-j>", function()
     vim.cmd.cnext()
 end, { desc = "Goes to next quickfix list item" })
 
-vim.keymap.set("n", "<A-p>", function()
+vim.keymap.set("n", "<A-k>", function()
     vim.cmd.cprevious()
 end, { desc = "Goes to next quickfix list item" })
 
@@ -213,7 +224,7 @@ vim.keymap.set("n", "<leader>cj", function()
 end, { desc = "Clear jump list" })
 
 vim.keymap.set("n", "<leader><CR>", function()
-    utils:openTerminal({ floating = false })
+    utils:openTerminal({})
 end, { desc = "Opens terminal" })
 
 vim.keymap.set("n", "<leader>sc", function()
@@ -225,6 +236,30 @@ vim.keymap.set("n", "<leader>gs", function()
     utils:runOnTerminal({ cmd = "lazygit" })
 end, { desc = "Run lazygit in a floating terminal" })
 
+-- vim.keymap.set("n", "<A-b>", function()
+--     utils:sendCmdToTerminal()
+-- end, { desc = "Build" })
+
+local build_cmd = nil
+
 vim.keymap.set("n", "<A-b>", function()
-    utils:sendCmdToTerminal()
-end, { desc = "Close buffers" })
+    local run_last_cmd = vim.fn.input("Run last command? (y-n) ")
+
+    if run_last_cmd == "n" then
+        local in_cmd = vim.fn.input("Command: ")
+        build_cmd = in_cmd
+    else
+        if build_cmd == nil then
+            local in_cmd = vim.fn.input("Command: ")
+            build_cmd = in_cmd
+        end
+    end
+
+    if build_cmd ~= nil and build_cmd ~= "" then
+        vim.opt.makeprg = build_cmd
+
+        vim.cmd.make()
+    else
+        print("Command not specified")
+    end
+end, { desc = "Build" })
