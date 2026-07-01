@@ -93,6 +93,7 @@ nvim_treesitter.setup {
 if ts_ok then
     -- fix bug, not starting for some languages
     local ts_installed_langs = nvim_treesitter.get_installed()
+    local ts_available_langs = nvim_treesitter.get_available()
 
     vim.api.nvim_create_autocmd("FileType", {
         -- pattern = { "c", "cpp", "make", "cs" },
@@ -100,22 +101,18 @@ if ts_ok then
         callback = function(args)
             local lang = vim.treesitter.language.get_lang(args.match)
 
-            if lang ~= "oil" then
-                if not vim.list_contains(ts_installed_langs, lang) then
-                    -- print("Installing treesitter parser for " .. lang .. "...")
-                    -- nvim_treesitter.install(lang):wait()
-                    vim.schedule(function()
-                        print("Installing treesitter parser for " .. lang .. "...")
-                        nvim_treesitter.install(lang):wait()
-                        pcall(vim.treesitter.start)
-                    end)
-                else
-                    vim.schedule(function()
-                        pcall(vim.treesitter.start)
-                    end)
-                end
-
-                -- pcall(vim.treesitter.start)
+            if not vim.list_contains(ts_installed_langs, lang) and vim.list_contains(ts_available_langs, lang) then
+                -- print("Installing treesitter parser for " .. lang .. "...")
+                -- nvim_treesitter.install(lang):wait()
+                vim.schedule(function()
+                    print("Installing treesitter parser for " .. lang .. "...")
+                    nvim_treesitter.install(lang):wait()
+                    pcall(vim.treesitter.start)
+                end)
+            else
+                vim.schedule(function()
+                    pcall(vim.treesitter.start)
+                end)
             end
         end,
     })
