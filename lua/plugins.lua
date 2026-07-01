@@ -102,8 +102,6 @@ if ts_ok then
             local lang = vim.treesitter.language.get_lang(args.match)
 
             if not vim.list_contains(ts_installed_langs, lang) and vim.list_contains(ts_available_langs, lang) then
-                -- print("Installing treesitter parser for " .. lang .. "...")
-                -- nvim_treesitter.install(lang):wait()
                 vim.schedule(function()
                     print("Installing treesitter parser for " .. lang .. "...")
                     nvim_treesitter.install(lang):wait()

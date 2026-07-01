@@ -1,0 +1,22 @@
+{
+    "main": {
+        "body": ["int main (int argc, char *argv[]) {", "\t$1", "\treturn 0;", "}"],
+        "prefix": "main"
+    },
+    "mainVoid": {
+        "body": ["int main (void) {", "\t$1", "\treturn 0;", "}"],
+        "prefix": "mainVoid"
+    },
+    "pragmaOnce": {
+        "body": ["#pragma once" , "$1"],
+        "prefix": "pragmaOnce"
+    },
+    "struct": {
+        "body": ["typedef struct {" , "} $1;"],
+        "prefix": "struct"
+    },
+    "enum": {
+        "body": ["typedef enum {" , "} $1;"],
+        "prefix": "enum"
+    }
+}
