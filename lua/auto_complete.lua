@@ -36,7 +36,7 @@ local getSnippets = function(filetype)
     return _snippets[filetype] or {}
 end
 
-        --[[
+--[[
 local lineHasPath = function(line)
     return utils.stringEndsWith(line, utils.path_char)
 end
@@ -153,7 +153,7 @@ function _G.customComplete(findstart, base)
                     local info = imp.body
 
                     if type(imp.body) ~= "table" then
-                        info = {imp.body}
+                        info = { imp.body }
                     end
 
                     table.insert(candidates, {
@@ -210,6 +210,20 @@ vim.api.nvim_create_autocmd({ "CompleteDone" }, {
                     vim.snippet.expand(body)
                 end
             end
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave" }, {
+    group = vim.api.nvim_create_augroup("b_quickfix_exit", { clear = true }),
+    -- pattern = "qf",
+    callback = function()
+        local win_id = vim.api.nvim_get_current_win()
+        local win_info = vim.fn.getwininfo(win_id)[1]
+
+        -- Ensure it is a quickfix list, NOT a location list
+        if win_info and win_info.loclist == 0 then
+            print(vim.inspect(win_info))
         end
     end,
 })

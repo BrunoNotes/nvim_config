@@ -289,10 +289,11 @@ cmp.setup({
                 columns = { { "label", "label_description", gap = 1 }, { "kind_icon" } }
             },
         },
-        documentation = { auto_show = true, auto_show_delay_ms = 200 },
+        documentation = { auto_show = true, auto_show_delay_ms = 100 },
         ghost_text = { enabled = false },
     },
     cmdline = {
+        enabled = true,
         keymap = {
             preset = 'none',
             ["<C-y>"] = { "select_and_accept", "fallback" },

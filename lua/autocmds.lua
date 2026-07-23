@@ -161,3 +161,21 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "LspAttach" }, {
     group = vim.api.nvim_create_augroup("b_status_line", { clear = true }),
     callback = statusBar,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("b_custom_qf_autoclose", { clear = true }),
+    pattern = "qf",
+    callback = function()
+        vim.keymap.set("n", "<CR>", function()
+            local qf_line = vim.fn.line(".")
+
+            vim.cmd.cclose()
+
+            ---@diagnostic disable-next-line: param-type-mismatch
+            local ok, _ = pcall(vim.cmd, qf_line .. "cc")
+            if not ok then
+                vim.notify("Could not jump to quickfix item", vim.log.levels.WARN)
+            end
+        end, { buffer = true, silent = true, desc = "Select item and auto-close quickfix" })
+    end,
+})

@@ -19,23 +19,23 @@ local utils = require("utils");
 -- command
 -------------------------------------
 
-vim.keymap.set("c", "<C-k>", function()
-    return vim.fn.pumvisible() == 1
-        -- and "<C-p>"
-        and "<C-k>"
-        or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
-end, { expr = true, replace_keycodes = true })
-
-vim.keymap.set("c", "<C-j>", function()
-    return vim.fn.pumvisible() == 1
-        -- and "<C-n>"
-        and "<C-j>"
-        or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
-end, { expr = true, replace_keycodes = true })
-
-vim.keymap.set("c", "<CR>", function()
-    return vim.fn.pumvisible() == 1 and "<C-y>" or "<CR>"
-end, { expr = true, replace_keycodes = true })
+-- vim.keymap.set("c", "<C-k>", function()
+--     return vim.fn.pumvisible() == 1
+--         -- and "<C-p>"
+--         -- and "<C-k>"
+--         or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
+-- end, { expr = true, replace_keycodes = true })
+--
+-- vim.keymap.set("c", "<C-j>", function()
+--     return vim.fn.pumvisible() == 1
+--         and "<C-n>"
+--         -- and "<C-j>"
+--         or vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "t", false)
+-- end, { expr = true, replace_keycodes = true })
+--
+-- vim.keymap.set("c", "<CR>", function()
+--     return vim.fn.pumvisible() == 1 and "<C-y>" or "<CR>"
+-- end, { expr = true, replace_keycodes = true })
 
 -------------------------------------
 -- terminal
@@ -202,6 +202,26 @@ vim.keymap.set("n", "<leader>qk", function()
     vim.cmd.cprevious()
 end, { desc = "Goes to next quickfix list item" })
 
+-- local function isQuickfixOpen()
+--     local result = {
+--         open = false,
+--         win = nil,
+--     }
+--   -- Get info for all windows in the current tab page
+--   local tab_wins = vim.fn.getwininfo()
+--
+--   for _, win in ipairs(tab_wins) do
+--     -- Check if it's a quickfix layout AND specifically NOT a location list
+--     if win.quickfix == 1 and win.loclist == 0 then
+--         result.open = true
+--         result.win = win
+--         break
+--     end
+--   end
+--
+--   return result
+-- end
+
 vim.keymap.set("n", "<A-q>", function()
     if vim.fn.getqflist({ winid = 0 }).winid > 0 then
         vim.cmd.cclose()
@@ -240,22 +260,17 @@ end, { desc = "Run lazygit in a floating terminal" })
 --     utils:sendCmdToTerminal()
 -- end, { desc = "Build" })
 
-local build_cmd = nil
+local build_cmd = ""
 
 vim.keymap.set("n", "<A-b>", function()
-    local run_last_cmd = vim.fn.input("Run last command? (y-n) ")
+    local default_cmd = build_cmd == "" and "make" or build_cmd
+    local keys = vim.api.nvim_replace_termcodes(default_cmd, true, false, true)
+    vim.api.nvim_feedkeys(keys, "m", true)
 
-    if run_last_cmd == "n" then
-        local in_cmd = vim.fn.input("Command: ")
-        build_cmd = in_cmd
-    else
-        if build_cmd == nil then
-            local in_cmd = vim.fn.input("Command: ")
-            build_cmd = in_cmd
-        end
-    end
+    local in_cmd = vim.fn.input("Command: ")
+    build_cmd = in_cmd
 
-    if build_cmd ~= nil and build_cmd ~= "" then
+    if build_cmd ~= "" then
         vim.opt.makeprg = build_cmd
 
         vim.cmd.make()

@@ -34,6 +34,8 @@ vim.opt.completeopt = "fuzzy,menu,menuone,noselect,noinsert,popup,nosort"
 vim.opt.complete = "F,kspell,o,."
 vim.opt.wildoptions = "fuzzy,pum,tagfile"
 
+vim.cmd([[set errorformat+=%f(%l:%c)\ %m]]) -- to parse odin error path in quickfix list
+
 vim.schedule(function()
     vim.o.clipboard = ""
     -- vim.o.clipboard = "unnamedplus"
@@ -49,4 +51,3 @@ require("usercmds")
 -- require("auto_complete")
 
 require("plugins")
-
