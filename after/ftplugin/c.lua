@@ -20,3 +20,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 vim.api.nvim_create_user_command("GenClangFormat", function()
     utils.writeFile(path, text)
 end, { desc = "Generate .clang-format for C", nargs = '*' })
+
+vim.lsp.config("clangd", {
+    cmd = { "clangd", "--header-insertion=never" }
+})

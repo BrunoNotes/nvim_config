@@ -120,34 +120,13 @@ end
 require("mason").setup()
 require("mason-lspconfig").setup()
 
-vim.lsp.config("lua_ls", {
-    on_init = function(client)
-        client.config.settings.Lua = vim.tbl_deep_extend(
-            "force",
-            client.config.settings.Lua,
-            {
-                -- Make the server aware of Neovim runtime files
-                workspace = {
-                    checkThirdParty = false,
-                    library = {
-                        vim.env.VIMRUNTIME
-                    }
-                    -- library = {
-                    --   vim.api.nvim_get_runtime_file("", true),
-                    -- }
-                }
-            })
-    end,
-    settings = {
-        Lua = {}
-    }
-})
+--[[
+language specific config is in the after folder
+:help lspconfig-all
 
-vim.g.zig_fmt_autosave = 0
-
-vim.lsp.config("clangd", {
-    cmd = { "clangd", "--header-insertion=never" }
-})
+- Notes:
+    - for C# use roslyn_ls (started in the after folder)
+]]
 
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("b_lsp_attach", { clear = true }),
