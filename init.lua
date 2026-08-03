@@ -41,6 +41,15 @@ vim.schedule(function()
     -- vim.o.clipboard = "unnamedplus"
 end)
 
+local utils = require("utils")
+if utils.os_name == "Windows_NT" then
+    if vim.fn.executable('pwsh') == 1 then
+        vim.o.shell = 'pwsh'
+    else
+        vim.o.shell = 'powershell'
+    end
+end
+
 require("keymap")
 
 require("autocmds")
