@@ -179,3 +179,54 @@ vim.api.nvim_create_autocmd("FileType", {
         end, { buffer = true, silent = true, desc = "Select item and auto-close quickfix" })
     end,
 })
+
+-- formats the quickfix list
+function _G.qfFormat (info)
+    local items = vim.fn.getqflist({ id = info.id, items = 1 }).items
+    local list = {}
+
+    for idx, item in ipairs(items) do
+        if item then
+            if item.bufnr == 0 and (item.text == "" or item.text == nil) then
+                table.insert(list, item.raw or "")
+            else
+                local file_name = item.bufnr > 0 and vim.fn.bufname(item.bufnr) or ""
+                if file_name ~= "" then
+                    file_name = vim.fn.fnamemodify(file_name, ":~:.") -- Shorten path
+                end
+
+                local line_num = item.lnum > 0 and tostring(item.lnum) or ""
+                local col = item.col > 0 and tostring(item.col) or ""
+                local pos = line_num ~= "" and (col ~= "" and string.format("%s:%s", line_num, col) or line_num) or ""
+
+                local text = item.text or ""
+
+                local str = string.format("%-30s │ %-8s │ %s", file_name, pos, text)
+                table.insert(list, str)
+            end
+        end
+    end
+
+    return list
+end
+
+-- Set Neovim to use our custom formatter globally
+vim.o.quickfixtextfunc = "v:lua.qfFormat"
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("b_custom_qf_highlight", { clear = true }),
+    pattern = "qf",
+    callback = function()
+        -- Clear standard layout quirks
+        vim.wo.wrap = false
+
+        vim.fn.matchadd("Comment", [[\v│]]) -- divider
+
+        -- vim.fn.matchadd("DiagnosticError", [[\v[Ee]rror\ze:]])
+        -- vim.fn.matchadd("DiagnosticWarn", [[\v[Ww]arning\ze:]])
+        -- vim.fn.matchadd("Comment", [[\v[Nn]ote\ze:]])
+
+        vim.fn.matchadd("Title", [[\v^[^│]+]]) -- file name
+        vim.fn.matchadd("Number", [[\v│\s*\zs\d+:\d+\ze\s*│]]) -- position
+    end,
+})
