@@ -342,6 +342,10 @@ M.printLog = function()
     print(vim.inspect(log))
 end
 
+M.clearLog = function()
+    log = {}
+end
+
 M.stringEndsWith = function(str, ending)
     return ending == "" or str:sub(- #ending) == ending
 end

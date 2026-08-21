@@ -4,6 +4,10 @@ vim.api.nvim_create_user_command("PrintLog", function()
     utils.printLog()
 end, { desc = "Print log", nargs = '*' })
 
+vim.api.nvim_create_user_command("ClearLog", function()
+    utils.clearLog()
+end, { desc = "Print log", nargs = '*' })
+
 vim.api.nvim_create_user_command("ChangeCWD", function()
     local file_cwd = vim.fn.expand("%:p:h")
     if (file_cwd ~= nil or file_cwd ~= "") then

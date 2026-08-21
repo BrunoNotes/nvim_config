@@ -48,6 +48,9 @@ if utils.os_name == "Windows_NT" then
     else
         vim.o.shell = 'powershell'
     end
+    vim.o.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
+    vim.o.shellquote = ""
+    vim.o.shellxquote = ""
 end
 
 require("keymap")

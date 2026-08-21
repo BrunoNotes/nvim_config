@@ -181,9 +181,14 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- formats the quickfix list
-function _G.qfFormat (info)
+function _G.qfFormat(info)
     local items = vim.fn.getqflist({ id = info.id, items = 1 }).items
     local list = {}
+    -- utils.log(items)
+
+    if items == nil then
+        return list
+    end
 
     for idx, item in ipairs(items) do
         if item then
