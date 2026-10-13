@@ -1,5 +1,4 @@
 local utils = require("utils");
-local icons = utils.icons;
 
 vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     desc = "Format options",
@@ -15,7 +14,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     group = vim.api.nvim_create_augroup("b_highlight_yank", { clear = true }),
     callback = function()
         -- vim.hl.on_yank({ timeout = 50 })
-        vim.hl.hl_op({ timeout = 50 })
+        -- vim.hl.hl_op({ timeout = 50 })
+        local ok, _ = pcall(vim.hl.hl_op, { timeout = 50 })
+
+        if not ok then
+            pcall(vim.hl.on_yank, { timeout = 50 })
+        end
     end,
 })
 
@@ -26,36 +30,28 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     command = [[%s/\s\+$//e]],
 })
 
-vim.api.nvim_create_autocmd({ "VimEnter" }, {
-    desc = "Change CWD on enter",
-    group = vim.api.nvim_create_augroup("b_change_cwd", { clear = true }),
-    callback = function()
-        local file_cwd = vim.fn.expand("%:p:h")
-        if (file_cwd ~= nil or file_cwd ~= "") then
-            local path_to_change = file_cwd
-            if string.sub(file_cwd, 1, 3) == "oil" then
-                path_to_change = string.sub(file_cwd, 7, string.len(file_cwd))
-            end
+-- vim.api.nvim_create_autocmd({ "VimEnter" }, {
+--     desc = "Change CWD on enter",
+--     group = vim.api.nvim_create_augroup("b_change_cwd", { clear = true }),
+--     callback = function()
+--         local file_cwd = vim.fn.expand("%:p:h")
+--         if (file_cwd ~= nil or file_cwd ~= "") then
+--             local path_to_change = file_cwd
+--             if string.sub(file_cwd, 1, 3) == "oil" then
+--                 path_to_change = string.sub(file_cwd, 7, string.len(file_cwd))
+--             end
+--
+--             local ok, _ = pcall(vim.fn.chdir, path_to_change)
+--
+--             if ok then
+--                 print(string.format("CWD changed to: %s", vim.loop.cwd()))
+--             end
+--         end
+--     end,
+-- })
 
-            local ok, _ = pcall(vim.fn.chdir, path_to_change)
-
-            if ok then
-                print(string.format("CWD changed to: %s", vim.loop.cwd()))
-            end
-        end
-    end,
-})
-
-vim.api.nvim_create_autocmd({ "VimEnter" }, {
-    desc = "Clear jump list on enter",
-    group = vim.api.nvim_create_augroup("b_jump_list", { clear = true }),
-    callback = function()
-        vim.cmd.cle();
-    end,
-})
-
-vim.api.nvim_create_autocmd({ "VimLeave" }, {
-    desc = "Clear jump list on exit",
+vim.api.nvim_create_autocmd({ "VimEnter", "VimLeave" }, {
+    desc = "Clear jump list",
     group = vim.api.nvim_create_augroup("b_jump_list", { clear = true }),
     callback = function()
         vim.cmd.cle();
@@ -109,7 +105,7 @@ local statusBar = function()
                 "%1")
             if (is_git_repo == "true") then
                 local git_branch = vim.fn.system { "git", "branch", "--show-current" }:gsub("\n[^\n]*(\n?)$", "%1")
-                return string.format('%s %s', icons.Git, git_branch)
+                return string.format('%s %s', utils.icons.Git, git_branch)
             else
                 return ""
             end
@@ -131,16 +127,18 @@ local statusBar = function()
                 end
             end
 
+            local lsp_icon = utils.icons.Gear
+
             if lsp_names ~= "" then
                 -- return string.format('LSP: %s', lsp_names)
-                return string.format('%s %s', icons.Gear, lsp_names)
+                return string.format('%s %s', lsp_icon, lsp_names)
             else
                 return ""
             end
         end
     end
 
-    vim.opt.statusline = table.concat({
+    vim.opt_local.statusline = table.concat({
         -- left
         " ",
         getFileName(),

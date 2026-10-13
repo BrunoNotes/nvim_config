@@ -25,19 +25,49 @@ vim.api.nvim_create_user_command("MakeFileExecutable", function()
     vim.cmd(":!chmod +x %")
 end, { desc = "Make current file executable", nargs = '*' })
 
-vim.api.nvim_create_user_command("GenEditorConfig", function()
+vim.api.nvim_create_user_command("GenEditorConfig", function(opts)
+    opts = opts or {}
+    local config = {
+        file = false,
+        lua = false,
+        csharp = false,
+    }
+
+    local no_args = true
+    if opts.fargs ~= nil then
+        for _, arg in ipairs(opts.fargs) do
+            if arg == "file" then
+                config.file = true
+            elseif arg == "lua" or arg == "all" then
+                config.lua = true
+            elseif arg == "csharp" or arg == "all" then
+                config.csharp = true
+            end
+        end
+    end
+
     local editorconfig_path = vim.fn.getcwd() .. "/.editorconfig"
 
-    local files = utils:scanDir(vim.fn.getcwd())
-    -- print(vim.inspect(files))
+    if config.file then
+        local files = utils:scanDir(vim.fn.getcwd())
+        -- print(vim.inspect(files))
 
-    local exts = {}
+        local exts = {}
 
-    -- print(vim.inspect(exts))
-    for _, file in ipairs(files) do
-        local ext = utils.getFileExt(file)
-        if not utils.existsInTable(exts, ext) then
-            table.insert(exts, ext)
+        -- print(vim.inspect(exts))
+        for _, file in ipairs(files) do
+            local ext = utils.getFileExt(file)
+            if not utils.existsInTable(exts, ext) then
+                table.insert(exts, ext)
+            end
+        end
+
+        for _, ext in ipairs(exts) do
+            if ext:lower() == "lua" then
+                config.lua = true
+            elseif ext:lower() == "cs" then
+                config.csharp = true
+            end
         end
     end
 
@@ -46,9 +76,8 @@ vim.api.nvim_create_user_command("GenEditorConfig", function()
 indent_style = space
 indent_size = 4
 ]]
-    for _, ext in ipairs(exts) do
-        if ext:lower() == "lua" then
-            local lua_config = [[
+
+    local lua_config = [[
 # https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/lua.template.editorconfig
 [*.lua]
 # true/false or always
@@ -57,9 +86,12 @@ align_continuous_rect_table_field = false
 # option none / always / contain_curly/
 align_array_table = false
         ]]
-            editorconfig = editorconfig .. lua_config
-        elseif ext:lower() == "cs" then
-            local cs_config = [[
+
+    if config.lua then
+        editorconfig = editorconfig .. lua_config
+    end
+
+    local csharp_config = [[
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/code-style-rule-options?view=vs-2019
 [*.cs]
 # New line preferences
@@ -71,29 +103,34 @@ csharp_new_line_before_members_in_object_initializers = false
 csharp_new_line_before_members_in_anonymous_types = false
 csharp_new_line_between_query_expression_clauses = false
         ]]
-            editorconfig = editorconfig .. cs_config
-        end
+
+    if config.csharp then
+        editorconfig = editorconfig .. csharp_config
     end
 
     utils.writeFile(editorconfig_path, editorconfig)
-end, { desc = "Generate .editorconfig", nargs = '*' })
-
-vim.api.nvim_create_user_command("Term", function(opts)
-    utils:openTerminal({})
 end, {
-    desc = "Opens terminal",
-    nargs = "*",
+    desc = "Generate .editorconfig",
+    nargs = '*',
     complete = function(ArgLead, CmdLine, CursorPos)
         local suggestions = {
-            "replace",
-            "vertical",
-            "horizontal",
+            "all",
+            "file",
+            "lua",
+            "csharp"
         }
 
         return vim.tbl_filter(function(item)
             return item:match("^" .. ArgLead)
         end, suggestions)
     end
+})
+
+vim.api.nvim_create_user_command("Term", function()
+    utils:openTerminal({})
+end, {
+    desc = "Opens terminal",
+    nargs = "*"
 })
 
 vim.api.nvim_create_user_command("TermRun", function(opts)
