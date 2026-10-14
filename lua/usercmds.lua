@@ -22,7 +22,11 @@ vim.api.nvim_create_user_command("ChangeCWD", function()
 end, { desc = "Change current working directory", nargs = '*' })
 
 vim.api.nvim_create_user_command("MakeFileExecutable", function()
-    vim.cmd(":!chmod +x %")
+    if utils:current_os() == utils.os.linux then
+        vim.cmd(":!chmod +x %")
+    else
+        print("Command not implemented for " .. utils:current_os())
+    end
 end, { desc = "Make current file executable", nargs = '*' })
 
 vim.api.nvim_create_user_command("GenEditorConfig", function(opts)
