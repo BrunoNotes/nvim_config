@@ -11,8 +11,26 @@ M.term_buf = nil
 M.buf_before_term = nil
 M.last_term_cmd = nil
 M.os_name = vim.uv.os_uname().sysname
+M.os = {
+    undefined = "",
+    linux = "Linux",
+    mac = "Darwin",
+    windows = "Windows_NT",
+}
 
-if M.os_name == "Windows_NT" then
+M.current_os = function(self)
+    if string.lower(self.os_name) == string.lower(self.os.linux) then
+        return self.os.linux
+    elseif string.lower(self.os_name) == string.lower(self.os.windows) then
+        return self.os.windows
+    elseif string.lower(self.os_name) == string.lower(self.os.mac) then
+        return self.os.mac
+    else
+        return self.os.undefined
+    end
+end
+
+if M:current_os() == M.os.windows then
     M.path_char = "\\"
 else
     M.path_char = "/"
@@ -123,7 +141,7 @@ M.scanDir = function(self, directory, opts)
     return scanRecursive(directory)
 end
 
-M.readFile = function(self, path)
+M.readFile = function(path)
     local file = assert(io.open(path, "rb"))
     local content = file:read("*a")
     file:close()
@@ -137,12 +155,12 @@ M.writeFile = function(path, content)
 end
 
 M.readJson = function(self, path)
-    local content = self:readFile(path)
+    local content = self.readFile(path)
     local json = vim.json.decode(content)
     return json
 end
 
-M.openFloatinWindow = function(self, buf)
+M.openFloatinWindow = function(buf)
     -- Create a floating window using the scratch buffer positioned in the middle
     local screen_size = 1.0
     local height = math.ceil(vim.o.lines * screen_size - 1)
@@ -241,7 +259,7 @@ M.closeFloatingWin = function(self)
     end
 end
 
-M.createBuffer = function(self, scratch)
+M.createBuffer = function(scratch)
     local buf = nil
     if not scratch then
         buf = vim.api.nvim_create_buf(true, false)
@@ -266,9 +284,9 @@ M.runOnTerminal = function(self, opts)
     end
 
     local delete_buffer = opts.delete_buffer or true
-    local buf = opts.buf or self:createBuffer(delete_buffer)
+    local buf = opts.buf or self.createBuffer(delete_buffer)
 
-    local win = self:openFloatinWindow(buf)
+    local win = self.openFloatinWindow(buf)
 
     -- Launch, and configure to close the window when the process exits
     local job_id = vim.fn.jobstart(opts.cmd, {

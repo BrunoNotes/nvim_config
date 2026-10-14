@@ -15,10 +15,10 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
         -- vim.hl.on_yank({ timeout = 50 })
         -- vim.hl.hl_op({ timeout = 50 })
-        local ok, _ = pcall(vim.hl.hl_op, { timeout = 50 })
+        local ok, _ = pcall(vim.hl.on_yank, { timeout = 50 })
 
         if not ok then
-            pcall(vim.hl.on_yank, { timeout = 50 })
+            pcall(vim.hl.hl_op, { timeout = 50 })
         end
     end,
 })
@@ -27,41 +27,28 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     desc = "Remove white space at the end",
     group = vim.api.nvim_create_augroup("b_remove_whitespace", { clear = true }),
     pattern = "*",
-    command = [[%s/\s\+$//e]],
+    -- command = [[%s/\s\+$//e]],
+    callback = function()
+        vim.schedule(function()
+            vim.cmd([[%s/\s\+$//e]])
+        end)
+    end,
 })
-
--- vim.api.nvim_create_autocmd({ "VimEnter" }, {
---     desc = "Change CWD on enter",
---     group = vim.api.nvim_create_augroup("b_change_cwd", { clear = true }),
---     callback = function()
---         local file_cwd = vim.fn.expand("%:p:h")
---         if (file_cwd ~= nil or file_cwd ~= "") then
---             local path_to_change = file_cwd
---             if string.sub(file_cwd, 1, 3) == "oil" then
---                 path_to_change = string.sub(file_cwd, 7, string.len(file_cwd))
---             end
---
---             local ok, _ = pcall(vim.fn.chdir, path_to_change)
---
---             if ok then
---                 print(string.format("CWD changed to: %s", vim.loop.cwd()))
---             end
---         end
---     end,
--- })
 
 vim.api.nvim_create_autocmd({ "VimEnter", "VimLeave" }, {
     desc = "Clear jump list",
     group = vim.api.nvim_create_augroup("b_jump_list", { clear = true }),
     callback = function()
-        vim.cmd.cle();
+        vim.schedule(function()
+            vim.cmd.cle();
+        end)
     end,
 })
 
 vim.api.nvim_create_autocmd({ "TermEnter" }, {
     desc = "Terminal local options",
     group = vim.api.nvim_create_augroup("b_custom_term_open", {}),
-    callback = function(buf)
+    callback = function()
         vim.opt_local.number = false
         vim.opt_local.relativenumber = false
         vim.opt_local.scrolloff = 0
@@ -71,7 +58,7 @@ vim.api.nvim_create_autocmd({ "TermEnter" }, {
 vim.api.nvim_create_autocmd({ "TermLeave" }, {
     desc = "Terminal local options",
     group = vim.api.nvim_create_augroup("b_custom_term_close", {}),
-    callback = function(buf)
+    callback = function()
         local win_config = vim.api.nvim_win_get_config(0)
         if win_config.relative ~= "" then
             -- floating
@@ -87,78 +74,76 @@ vim.api.nvim_create_autocmd({ "TermLeave" }, {
     end,
 })
 
-local statusBar = function()
-    local buf_id = vim.api.nvim_get_current_buf()
-
-    local getFileName = function()
-        local file_path = vim.api.nvim_buf_get_name(buf_id)
-
-        file_path = string.gsub(file_path, vim.loop.cwd() .. utils.path_char, "")
-
-        return file_path
-    end
-
-    local getGitStatus = function()
-        -- check if git exists
-        if vim.fn.executable("git") == 1 then
-            local is_git_repo = vim.fn.system { "git", "rev-parse", "--is-inside-work-tree" }:gsub("\n[^\n]*(\n?)$",
-                "%1")
-            if (is_git_repo == "true") then
-                local git_branch = vim.fn.system { "git", "branch", "--show-current" }:gsub("\n[^\n]*(\n?)$", "%1")
-                return string.format('%s %s', utils.icons.Git, git_branch)
-            else
-                return ""
-            end
-        else
-            return ""
-        end
-    end
-
-    local getLspName = function()
-        local lsp_clients = vim.lsp.get_clients({ bufnr = buf_id })
-
-        if lsp_clients ~= nil then
-            local lsp_names = ""
-            for _, value in ipairs(lsp_clients) do
-                if lsp_names == "" then
-                    lsp_names = tostring(value.name)
-                else
-                    lsp_names = lsp_names .. ", " .. tostring(value.name)
-                end
-            end
-
-            local lsp_icon = utils.icons.Gear
-
-            if lsp_names ~= "" then
-                -- return string.format('LSP: %s', lsp_names)
-                return string.format('%s %s', lsp_icon, lsp_names)
-            else
-                return ""
-            end
-        end
-    end
-
-    vim.opt_local.statusline = table.concat({
-        -- left
-        " ",
-        getFileName(),
-        "%=",
-        -- middle
-        "%=",
-        -- right
-        getLspName(),
-        " ",
-        getGitStatus(),
-        " ",
-        '%l:%c',
-        " ",
-    })
-end
-
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "LspAttach" }, {
     desc = "Status line",
     group = vim.api.nvim_create_augroup("b_status_line", { clear = true }),
-    callback = statusBar,
+    callback = function()
+        local buf_id = vim.api.nvim_get_current_buf()
+
+        local getFileName = function()
+            local file_path = vim.api.nvim_buf_get_name(buf_id)
+
+            file_path = string.gsub(file_path, vim.loop.cwd() .. utils.path_char, "")
+
+            return file_path
+        end
+
+        local getGitStatus = function()
+            -- check if git exists
+            if vim.fn.executable("git") == 1 then
+                local is_git_repo = vim.fn.system { "git", "rev-parse", "--is-inside-work-tree" }:gsub("\n[^\n]*(\n?)$",
+                    "%1")
+                if (is_git_repo == "true") then
+                    local git_branch = vim.fn.system { "git", "branch", "--show-current" }:gsub("\n[^\n]*(\n?)$", "%1")
+                    return string.format('%s %s', utils.icons.Git, git_branch)
+                else
+                    return ""
+                end
+            else
+                return ""
+            end
+        end
+
+        local getLspName = function()
+            local lsp_clients = vim.lsp.get_clients({ bufnr = buf_id })
+
+            if lsp_clients ~= nil then
+                local lsp_names = ""
+                for _, value in ipairs(lsp_clients) do
+                    if lsp_names == "" then
+                        lsp_names = tostring(value.name)
+                    else
+                        lsp_names = lsp_names .. ", " .. tostring(value.name)
+                    end
+                end
+
+                local lsp_icon = utils.icons.Gear
+
+                if lsp_names ~= "" then
+                    -- return string.format('LSP: %s', lsp_names)
+                    return string.format('%s %s', lsp_icon, lsp_names)
+                else
+                    return ""
+                end
+            end
+        end
+
+        vim.opt_local.statusline = table.concat({
+            -- left
+            " ",
+            getFileName(),
+            "%=",
+            -- middle
+            "%=",
+            -- right
+            getLspName(),
+            " ",
+            getGitStatus(),
+            " ",
+            '%l:%c',
+            " ",
+        })
+    end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -233,4 +218,56 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.fn.matchadd("Title", [[\v^[^│]+]]) -- file name
         vim.fn.matchadd("Number", [[\v│\s*\zs\d+:\d+\ze\s*│]]) -- position
     end,
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("b_lsp_attach", { clear = true }),
+    callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if not client then return end
+
+        -- This stops the LSP from sending the "gray" tokens for inactive regions
+        if client and client.name == "clangd" then
+            client.server_capabilities.semanticTokensProvider = nil
+        end
+        vim.diagnostic.config({ underline = { severity = { min = vim.diagnostic.severity.HINT } } })
+        vim.api.nvim_set_hl(0, "DiagnosticUnnecessary", {})
+
+        if client:supports_method("textDocument/completion") then
+            -- adds completion to the default list (<C-x><C-o>)
+            vim.lsp.completion.enable(
+                true,
+                client.id,
+                args.buf,
+                {
+                    autotrigger = false
+                }
+            )
+            -- vim.cmd("set completeopt+=noselect")
+        end
+
+        vim.keymap.set("n", "<leader>lf", vim.lsp.buf.format)
+        vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end)
+        vim.keymap.set("n", "H", function() vim.diagnostic.open_float() end)
+        vim.keymap.set("i", "<C-S>", function() vim.lsp.buf.signature_help() end)
+        vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end)
+        vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end)
+        vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end)
+        vim.keymap.set("n", "<F2>", function() vim.lsp.buf.rename() end)
+
+        -- vim.api.nvim_create_autocmd("BufWritePre", {
+        --     desc = "Format on save",
+        --     group = vim.api.nvim_create_augroup("b_lsp_format", { clear = true }),
+        --     buffer = args.buf,
+        --     callback = function()
+        --         if client:supports_method("textDocument/formatting") then
+        --             vim.lsp.buf.format({
+        --                 bufnr = args.buf,
+        --                 id = client.id,
+        --                 timeout_ms = 1000
+        --             })
+        --         end
+        --     end,
+        -- })
+    end
 })

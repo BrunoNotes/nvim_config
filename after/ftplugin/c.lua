@@ -1,7 +1,5 @@
 local utils = require("utils");
 
-local path = vim.fn.getcwd() .. "/.clang-format"
-
 local text = [[
 ---
 Language: C
@@ -18,7 +16,9 @@ AllowAllParametersOfDeclarationOnNextLine: true
 ]]
 
 vim.api.nvim_create_user_command("GenClangFormat", function()
-    utils.writeFile(path, text)
+    local path = vim.fn.getcwd() .. utils.path_char .. ".clang-format"
+    local in_path = vim.fn.input("Path: ", path)
+    utils.writeFile(in_path, text)
 end, { desc = "Generate .clang-format for C", nargs = '*' })
 
 vim.lsp.config("clangd", {

@@ -1,8 +1,6 @@
 -- csharp
 local utils = require("utils");
 
-local omnisharp_path = vim.fn.getcwd() .. "/omnisharp.json"
-
 local omnisharp_json = [[
 {
     "FormattingOptions": {
@@ -23,7 +21,9 @@ local omnisharp_json = [[
 ]]
 
 vim.api.nvim_create_user_command("GenOmnisharpJson", function()
-    utils.writeFile(omnisharp_path, omnisharp_json)
+    local path = vim.fn.getcwd() .. utils.path_char .. "omnisharp.json"
+    local in_path = vim.fn.input("Path: ", path)
+    utils.writeFile(in_path, omnisharp_json)
 end, { desc = "Generate omnisharp.json for C#", nargs = '*' })
 
 -- C#

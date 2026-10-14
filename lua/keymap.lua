@@ -62,6 +62,10 @@ vim.keymap.set("v", "<leader>y", "\"+y", { desc = "Copy to system clipboard" })
 vim.keymap.set("v", "p", '"_dP', { desc = "Paste on top of a word without copying" })
 vim.keymap.set("v", "<leader>Y", "\"+Y", { desc = "Copy to system clipboard" })
 
+vim.keymap.set({ "x", "v", "n" }, "<leader>P", '"+P', { desc = "Paste from system clipboard" })
+vim.keymap.set({ "x", "v", "n" }, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
+
+
 local function getSelection()
     -- does not handle rectangular selection
     local s_start = vim.fn.getpos(".")
@@ -255,10 +259,6 @@ end, { desc = "Opens scratch buffer" })
 vim.keymap.set("n", "<leader>gs", function()
     utils:runOnTerminal({ cmd = "lazygit" })
 end, { desc = "Run lazygit in a floating terminal" })
-
--- vim.keymap.set("n", "<A-b>", function()
---     utils:sendCmdToTerminal()
--- end, { desc = "Build" })
 
 local build_cmd = ""
 

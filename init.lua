@@ -36,13 +36,12 @@ vim.opt.wildoptions = "fuzzy,pum,tagfile"
 
 vim.cmd([[set errorformat+=%f(%l:%c)\ %m]]) -- to parse odin error path in quickfix list
 
-vim.schedule(function()
-    vim.o.clipboard = ""
-    -- vim.o.clipboard = "unnamedplus"
-end)
+vim.o.clipboard = ""
+-- vim.o.clipboard = "unnamedplus"
 
 local utils = require("utils")
-if utils.os_name == "Windows_NT" then
+
+if utils:current_os() == utils.os.windows then
     if vim.fn.executable('pwsh') == 1 then
         vim.o.shell = 'pwsh'
     else
@@ -63,3 +62,41 @@ require("usercmds")
 -- require("auto_complete")
 
 require("plugins")
+
+vim.diagnostic.config({
+    signs = {
+        text = {
+            [vim.diagnostic.severity.ERROR] = utils.icons.error,
+            [vim.diagnostic.severity.WARN] = utils.icons.warn,
+            [vim.diagnostic.severity.HINT] = utils.icons.hint,
+            [vim.diagnostic.severity.INFO] = utils.icons.info,
+        },
+    },
+    -- virtual_lines or virtual_text
+    -- underline = false,
+    virtual_text = {
+        -- source = "always",  -- Or "if_many"
+        severity = vim.diagnostic.severity.ERROR,
+        spacing = 10,
+        prefix = "",
+        sufix = "",
+        format = function(diagnostic)
+            if diagnostic.severity == vim.diagnostic.severity.ERROR then
+                return string.format("%s %s", utils.icons.error, diagnostic.message)
+            end
+            if diagnostic.severity == vim.diagnostic.severity.WARN then
+                return string.format("%s %s", utils.icons.warn, diagnostic.message)
+            end
+            if diagnostic.severity == vim.diagnostic.severity.INFO then
+                return string.format("%s %s", utils.icons.info, diagnostic.message)
+            end
+            if diagnostic.severity == vim.diagnostic.severity.HINT then
+                return string.format("%s %s", utils.icons.hint, diagnostic.message)
+            end
+            return diagnostic.message
+        end,
+    },
+})
+
+if vim.g.neovide then
+end
