@@ -15,11 +15,10 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
         -- vim.hl.on_yank({ timeout = 50 })
         -- vim.hl.hl_op({ timeout = 50 })
-        local ok, _ = pcall(vim.hl.on_yank, { timeout = 50 })
-
-        if not ok then
-            pcall(vim.hl.hl_op, { timeout = 50 })
-        end
+        local _, _ = pcall(vim.hl.on_yank, { timeout = 50 })
+        -- if not ok then
+        --     pcall(vim.hl.hl_op, { timeout = 50 })
+        -- end
     end,
 })
 
