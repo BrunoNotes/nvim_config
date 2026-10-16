@@ -10,11 +10,13 @@ end, { desc = "Print log", nargs = '*' })
 
 vim.api.nvim_create_user_command("ChangeCWD", function()
     local file_cwd = vim.fn.expand("%:p:h")
-    if (file_cwd ~= nil or file_cwd ~= "") then
-        if string.sub(file_cwd, 1, 3) == "oil" then
-            vim.fn.chdir(string.sub(file_cwd, 7, string.len(file_cwd)))
+    local in_path = vim.fn.input("Path: ", file_cwd)
+    utils.log(in_path)
+    if (in_path ~= nil or in_path ~= "") then
+        if string.sub(in_path, 1, 3) == "oil" then
+            vim.fn.chdir(string.sub(in_path, 7, string.len(file_cwd)))
         else
-            vim.fn.chdir(file_cwd)
+            vim.fn.chdir(in_path)
         end
     end
 

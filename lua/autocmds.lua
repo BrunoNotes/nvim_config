@@ -9,18 +9,18 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "Highlight when yanking (copying) text",
-    group = vim.api.nvim_create_augroup("b_highlight_yank", { clear = true }),
-    callback = function()
-        -- vim.hl.on_yank({ timeout = 50 })
-        -- vim.hl.hl_op({ timeout = 50 })
-        local _, _ = pcall(vim.hl.on_yank, { timeout = 50 })
-        -- if not ok then
-        --     pcall(vim.hl.hl_op, { timeout = 50 })
-        -- end
-    end,
-})
+-- vim.api.nvim_create_autocmd("TextYankPost", {
+--     desc = "Highlight when yanking (copying) text",
+--     group = vim.api.nvim_create_augroup("b_highlight_yank", { clear = true }),
+--     callback = function()
+--         -- vim.hl.on_yank({ timeout = 50 })
+--         -- vim.hl.hl_op({ timeout = 50 })
+--         local ok, _ = pcall(vim.hl.on_yank, { timeout = 50 })
+--         if not ok then
+--             pcall(vim.hl.hl_op, { timeout = 50 })
+--         end
+--     end,
+-- })
 
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     desc = "Remove white space at the end",
@@ -77,6 +77,25 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "LspAttach" }, {
     desc = "Status line",
     group = vim.api.nvim_create_augroup("b_status_line", { clear = true }),
     callback = function()
+        local ignored_filetypes = {
+            ["TelescopePrompt"] = true,
+            ["help"] = true,
+        }
+        if ignored_filetypes[vim.bo.filetype] then
+            return
+        end
+
+        local ignored_buftypes = {
+            ["nofile"] = true,
+            ["prompt"] = true,
+            ["popup"] = true,
+            ["quickfix"] = true,
+            ["terminal"] = true,
+        }
+        if ignored_buftypes[vim.bo.buftype] then
+            return
+        end
+
         local buf_id = vim.api.nvim_get_current_buf()
 
         local getFileName = function()
