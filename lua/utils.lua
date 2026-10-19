@@ -372,4 +372,28 @@ M.stringStartsWith = function(str, start)
     return str:sub(1, start:len()) == start
 end
 
+M.changeCWD = function(self, ask_input)
+    local file_cwd = vim.bo.filetype == "oil" and require("oil").get_current_dir() or vim.fn.expand("%:p:h")
+    local in_path = ask_input and vim.fn.input("Path: ", file_cwd) or file_cwd
+
+    if (in_path ~= nil or in_path ~= "") then
+        local path_to_change = in_path
+        if string.sub(in_path, 1, 3) == "oil" then
+            path_to_change = string.sub(in_path, 7, string.len(in_path))
+            if self:current_os() == self.os.windows then
+                path_to_change = path_to_change:gsub("/", self.path_char)
+            end
+        end
+
+        local ok, _ = pcall(vim.fn.chdir, path_to_change)
+
+        if ok then
+            vim.schedule(function()
+                vim.cmd("echo ''")
+                print(string.format("CWD changed to: %s", vim.loop.cwd()))
+            end)
+        end
+    end
+end
+
 return M

@@ -9,18 +9,18 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
--- vim.api.nvim_create_autocmd("TextYankPost", {
---     desc = "Highlight when yanking (copying) text",
---     group = vim.api.nvim_create_augroup("b_highlight_yank", { clear = true }),
---     callback = function()
---         -- vim.hl.on_yank({ timeout = 50 })
---         -- vim.hl.hl_op({ timeout = 50 })
---         local ok, _ = pcall(vim.hl.on_yank, { timeout = 50 })
---         if not ok then
---             pcall(vim.hl.hl_op, { timeout = 50 })
---         end
---     end,
--- })
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "Highlight when yanking (copying) text",
+    group = vim.api.nvim_create_augroup("b_highlight_yank", { clear = true }),
+    callback = function()
+        -- vim.hl.on_yank({ timeout = 50 })
+        -- vim.hl.hl_op({ timeout = 50 })
+        local ok, _ = pcall(vim.hl.on_yank, { timeout = 50 })
+        if not ok then
+            pcall(vim.hl.hl_op, { timeout = 50 })
+        end
+    end,
+})
 
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     desc = "Remove white space at the end",
@@ -288,4 +288,12 @@ vim.api.nvim_create_autocmd("LspAttach", {
         --     end,
         -- })
     end
+})
+
+vim.api.nvim_create_autocmd({ "VimEnter" }, {
+    desc = "Change CWD on enter",
+    group = vim.api.nvim_create_augroup("b_change_cwd", { clear = true }),
+    callback = function()
+        utils:changeCWD(false)
+    end,
 })
