@@ -29,7 +29,7 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     -- command = [[%s/\s\+$//e]],
     callback = function()
         vim.schedule(function()
-            vim.cmd([[%s/\s\+$//e]])
+            pcall(vim.cmd, [[%s/\s\+$//e]])
         end)
     end,
 })
