@@ -31,4 +31,6 @@ end, { desc = "Generate omnisharp.json for C#", nargs = '*' })
 local ok_lsp, _ = pcall(vim.lsp.enable, "roslyn_ls")
 if not ok_lsp then
     print("Unable to start language server")
+else
+    vim.env.ROSLYN_LANGUAGE_SERVER_DAEMON_KEEPALIVE = "0"
 end
